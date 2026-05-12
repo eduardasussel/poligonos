@@ -15,7 +15,7 @@ void inicializaComandos() {
     figurasSelecionadas = criaLista();
 }
 
-void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados) {
+void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados, FILE *txt) {
     
     destroiListaApenasNos(figurasSelecionadas); 
     figurasSelecionadas = criaLista();
@@ -30,8 +30,12 @@ void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados)
         if (estaDentroDaRegiao(figura, x, y, w, h)) {
             insereLista(figurasSelecionadas, figura);
             setFiguraSelecionada(figura, 1);
+           fprintf(txt, "ID: %d, Tipo: %c selecionado.\n", 
+                    getFormaId(figura), getFormaTipo(figura));
         }
     }
+    
+    fprintf(txt, "\n");
     printf("Seleção concluída. %d figuras selecionadas.\n", contagemItens(figurasSelecionadas));
 }
 

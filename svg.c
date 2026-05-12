@@ -57,11 +57,11 @@ void desenhaFiguraSVG(FILE *svg, Figura f) {
             x, y, corp, corb, anchor_svg, texto);
 }
 
-    if (isFiguraSelecionada(f)) {
-        double ax, ay;
-        getAncoraFigura(f, &ax, &ay);
-        fprintf(svg, "  <circle cx=\"%f\" cy=\"%f\" r=\"4\" fill=\"none\" stroke=\"red\" stroke-width=\"1\" />\n", ax, ay);
-    }
+    // if (isFiguraSelecionada(f)) {
+    //     double ax, ay;
+    //     getAncoraFigura(f, &ax, &ay);
+    //     fprintf(svg, "  <circle cx=\"%f\" cy=\"%f\" r=\"4\" fill=\"none\" stroke=\"red\" stroke-width=\"1\" />\n", ax, ay);
+    // }
 }
 
 void desenhaRetanguloSel(FILE *svg, double x, double y, double w, double h) {

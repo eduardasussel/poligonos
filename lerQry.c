@@ -94,9 +94,9 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
             realizaComandoPol(p_id, i_id, d, corb, corp, listaPoligonos, bancoDeDados);
 
         } else if (strcmp(comando, "clp") == 0) {
-    int id_clp;
-    fscanf(arq, "%d", &id_clp);
-    Poligono p = buscaPoligono(listaPoligonos, id_clp);
+                int id_clp;
+                fscanf(arq, "%d", &id_clp);
+                Poligono p = buscaPoligono(listaPoligonos, id_clp);
 
     if (p != NULL) {
         while (tamanhoFila(getPontosPoligono(p)) > 0) {
@@ -113,7 +113,7 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
             fscanf(arq, "%lf %lf %lf %lf", &x, &y, &w, &h);
             fprintf(txt, "sel %.2f %.2f %.2f %.2f\n", x, y, w, h);
             
-            selecionaFiguraETxt(x, y, w, h, bancoDeDados, txt); 
+            selecionaFigura(x, y, w, h, bancoDeDados, txt); 
             desenhaRetanguloSel(svg, x, y, w, h);
 
         } else if (strcmp(comando, "dels") == 0) {
