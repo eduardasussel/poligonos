@@ -10,11 +10,11 @@ void inserePoligono(int p_id, double x, double y, Lista BancoDeDados);
 
 void removeCordenadaAntiga(int p_id, Lista BancoDeDados);
 
-void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados); // usada
+void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados); 
 
 void removeFiguras(Lista BancoDeDados);
 
-void modificaFiguras(double dx, double dy, char* corb, char* corp, Lista bancoDeDados); // usada
+void modificaFiguras(double dx, double dy, char* corb, char* corp, Lista bancoDeDados); 
 
 void inicializaComandos();
 

@@ -84,7 +84,7 @@ void fechaSVG(FILE *svg) {
     fclose(svg);
 }
 
-void removeFigurasComSVG(Lista bancoDeDados, FILE *svg) {
+void removeFigurasComSVG(Lista bancoDeDados, FILE *svg, FILE *txt) {
     Iterador it = primeiro(bancoDeDados);
     while (it != NULL) {
         Figura f = getItem(it);
@@ -93,6 +93,8 @@ void removeFigurasComSVG(Lista bancoDeDados, FILE *svg) {
         if (isFiguraSelecionada(f)) {
             double ax, ay;
             getAncoraFigura(f, &ax, &ay);
+
+            fprintf(txt, "Figura removida: ID %d, Tipo %c, Ancora (%.2f, %.2f)\n", getFormaId(f), getFormaTipo(f), ax, ay);
             
             desenhaXExclusao(svg, ax, ay);
             
@@ -101,6 +103,7 @@ void removeFigurasComSVG(Lista bancoDeDados, FILE *svg) {
         }
         it = prox;
     }
+    fprintf(txt, "\n");
 }
 
 void finalizaSVG(FILE *svg) {

@@ -21,8 +21,14 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
     }
 
     char caminhoSVG[512];
+    char caminhoTXT[512];
+
     sprintf(caminhoSVG, "%s/%s.svg", pathSaida, nomeArq);
+
+    sprintf(caminhoTXT, "%s/%s.txt", pathSaida, nomeArq);
+
     FILE *svg = iniciaSVG(caminhoSVG);
+    FILE *txt = fopen(caminhoTXT, "w");
     
     char comando[10];
     double x, y, w, h, dx, dy;
@@ -64,19 +70,23 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
         
                 printf("Ponto (%f,%f) inserido no polígono %d\n", x_val, y_val, p_id);
 
+                fprintf(txt, "inp %d %d\n", p_id, i_id);
+                fprintf(txt, "Coordenada inserida: (%.2f, %.2f) proveniente da figura ID %d\n\n", x_val, y_val, i_id);
+            }
 
         } else if (strcmp(comando, "rmp") == 0) {
             int p_id;
             fscanf(arq, "%d", &p_id); 
             Poligono p = buscaPoligono(listaPoligonos, p_id);
-
             Ponto *removido = desenfileiraPontoDoPoligono(p);
-        if (removido) {
-            printf("Removido: %f, %f\n", getPontoX(removido), getPontoY(removido));
-            liberaPonto(removido);
-        }
-    }
-        } else if (strcmp(comando, "pol") == 0) {
+            
+            fprintf(txt, "rmp %d\n", p_id);
+            if (removido) {
+                fprintf(txt, "Coordenada removida: (%.2f, %.2f)\n\n", getPontoX(removido), getPontoY(removido));
+                liberaPonto(removido);
+
+            }
+         } else if (strcmp(comando, "pol") == 0) {
             int p_id, i_id;
             double d;
             char corb[30], corp[30];
@@ -98,16 +108,20 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
         }
         printf("Polígono %d esvaziado.\n", id_clp);
     }
-    
+
         } else if (strcmp(comando, "sel") == 0) {
             fscanf(arq, "%lf %lf %lf %lf", &x, &y, &w, &h);
-            selecionaFigura(x, y, w, h, bancoDeDados);
+            fprintf(txt, "sel %.2f %.2f %.2f %.2f\n", x, y, w, h);
+            
+            selecionaFiguraETxt(x, y, w, h, bancoDeDados, txt); 
             desenhaRetanguloSel(svg, x, y, w, h);
-        } 
-        else if (strcmp(comando, "dels") == 0) {
-            removeFigurasComSVG(bancoDeDados, svg);
-        } 
-        else if (strcmp(comando, "mcs") == 0) {
+
+        } else if (strcmp(comando, "dels") == 0) {
+            fprintf(txt, "dels\n");
+
+            removeFigurasComSVG(bancoDeDados, svg, txt); 
+
+        }else if (strcmp(comando, "mcs") == 0) {
             fscanf(arq, "%lf %lf %s %s", &dx, &dy, corb, corp);
             modificaFiguras(dx, dy, corb, corp, bancoDeDados);
         }
@@ -121,5 +135,6 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
     }
 
     finalizaSVG(svg); 
+    fclose(txt);
     fclose(arq);
 }

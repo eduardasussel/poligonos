@@ -100,7 +100,7 @@ void preenchePoligono(Lista poligLst, Lista preenhLst, double d, char* corp, int
     determinaBoundingBox(poligLst, &xmin, &ymin, &xmax, &ymax);
 
    if (d <= 0) return;
-    double ycorrente = ymin + (d/2.0);
+    double ycorrente = ymin;;
 
     while (ycorrente < ymax) {
         Lista coordXLst = criaLista();
@@ -128,14 +128,13 @@ void preenchePoligono(Lista poligLst, Lista preenhLst, double d, char* corp, int
                 }
             }
         }
-        printf("DEBUG: Linha detectada entre Y1: %lf e Y2: %lf\n", y1, y2);
     }
             
         geraLinhasPreenchimento(ycorrente, coordXLst, preenhLst, corp, id_sequencial);
     
         for (Iterador it = primeiro(coordXLst); it != NULL; it = proximo(it)) {
             double *ptr = (double*) getItem(it);
-            free(ptr);
+        if (ptr) free(ptr);
         }
         liberaLista(coordXLst);
 
@@ -165,7 +164,7 @@ void geraLinhasPreenchimento(double y, Lista coordXLst, Lista preenhLst, char* c
                 }
             }
         }
-        
+        printf("Desenhando linha em Y=%f de X=%f ate X=%f\n", y, *x1_ptr, *x2_ptr);
         it = proximo(it);
     }
 }
@@ -209,7 +208,7 @@ int segmentosInterceptam(double x1, double x2, double y, void* linhaBorda, doubl
     double y_min = (ly1 < ly2) ? ly1 : ly2;
     double y_max = (ly1 > ly2) ? ly1 : ly2;
 
-    if (y >= y_min && y < y_max) {
+    if (y >= y_min && y <= y_max + 0.000001) {
         double lx1 = getFormaX1(linhaBorda);
         double lx2 = getFormaX2(linhaBorda);
         

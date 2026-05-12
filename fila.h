@@ -5,9 +5,13 @@ typedef void *Fila;
 typedef void *Lista;
 
 Fila criaFila();
+
 void enfileira(Fila f, void *item);
+
 void *desenfileira(Fila f);
+
 int filaVazia(Fila f);
+
 int tamanhoFila(Fila f);
 
 #endif

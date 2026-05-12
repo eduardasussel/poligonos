@@ -29,7 +29,6 @@ void insereLista(Lista l, void *item) {
     }
     
     EstruturaLista *lista = (EstruturaLista*) l;
-    printf("DEBUG: Inserindo elemento na lista. Tamanho atual: %d\n", ((EstruturaLista*)l)->tamanho);
     
     NoLista *novo = (NoLista*) malloc(sizeof(NoLista));
     if (!novo) return;
@@ -63,11 +62,11 @@ void insereListaOrdenado(Lista l, void *item) {
         novo->prox = atual;
         anterior->prox = novo;
     }
+
     lista->tamanho++;
 }
 
 void verificaOrdenacao(Lista coordXLst) {
-    printf("DEBUG: Ordem dos X na linha: ");
     for (Iterador it = primeiro(coordXLst); it != NULL; it = proximo(it)) {
         double *valor = (double*) getItem(it);
         printf("%.2f ", *valor);
@@ -168,4 +167,10 @@ Figura buscaFiguraPorId(Lista l, int id) {
         }
     }
     return NULL;
+}
+
+int tamanhoLista(Lista l) {
+    if (!l) return 0;
+    EstruturaLista *lista = (EstruturaLista*) l;
+    return lista->tamanho;
 }

@@ -17,7 +17,7 @@ void desenhaXExclusao(FILE *svg, double x, double y);
 
 void fechaSVG(FILE *svg);
 
-void removeFigurasComSVG(Lista bancoDeDados, FILE *svg);
+void removeFigurasComSVG(Lista bancoDeDados, FILE *svg, FILE *txt);
 
 void finalizaSVG(FILE *svg);
 
