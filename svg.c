@@ -31,11 +31,9 @@ void desenhaFiguraSVG(FILE *svg, Figura f) {
     } 
     else if (tipo == 'c') { 
     double r = getFormaR(f);
-    char *c_borda = getCorBorda(f);
-    char *c_preench = getCorPreenchimento(f);
 
-    char *final_borda = (c_borda != NULL && strlen(c_borda) > 0) ? c_borda : "black";
-    char *final_fill = (c_preench != NULL && strlen(c_preench) > 0) ? c_preench : "none";
+    char *final_borda = (corb != NULL && strlen(corb) > 0) ? corb : "black";
+    char *final_fill = (corp != NULL && strlen(corp) > 0) ? corp : "none";
 
     fprintf(svg, "  <circle cx=\"%f\" cy=\"%f\" r=\"%f\" stroke=\"%s\" fill=\"%s\" />\n",
             x, y, r, final_borda, final_fill);

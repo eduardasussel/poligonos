@@ -20,10 +20,16 @@ void selecionaFigura(double x, double y, double w, double h, Lista BancoDeDados)
     destroiListaApenasNos(figurasSelecionadas); 
     figurasSelecionadas = criaLista();
 
+   for (Iterador it = primeiro(BancoDeDados); it != NULL; it = proximo(it)) {
+        void* figura = getItem(it);
+        setFiguraSelecionada(figura, 0);
+    }
+
     for (Iterador it = primeiro(BancoDeDados); it != NULL; it = proximo(it)) {
         void* figura = getItem(it);
         if (estaDentroDaRegiao(figura, x, y, w, h)) {
             insereLista(figurasSelecionadas, figura);
+            setFiguraSelecionada(figura, 1);
         }
     }
     printf("Seleção concluída. %d figuras selecionadas.\n", contagemItens(figurasSelecionadas));

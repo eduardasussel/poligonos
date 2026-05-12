@@ -8,7 +8,6 @@ Fila criaFila();
 void enfileira(Fila f, void *item);
 void *desenfileira(Fila f);
 int filaVazia(Fila f);
-void liberaFila(Fila f);
-Lista exportarFilaParaLista(Fila f);
+int tamanhoFila(Fila f);
 
 #endif

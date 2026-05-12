@@ -99,9 +99,10 @@ void setCorPreenchimento(void* fig, char* cor) {
     if (cor != NULL) {
         memset(((struct forma*)fig)->corp, 0, 30);
         strncpy(((struct forma*)fig)->corp, cor, 29);
-        ((struct forma*)fig)->corp[29] = '\0';
+        ((struct forma*)fig)->corp[29] = '\0'; 
     }
 }
+
 
 Figura criaCirculoStruct(int id, double x, double y, double r, char* corb, char* corp) {
     struct forma *f = (struct forma*) malloc(sizeof(struct forma));
@@ -111,7 +112,7 @@ Figura criaCirculoStruct(int id, double x, double y, double r, char* corb, char*
     f->y = y;
     f->r = r;
     setCorBorda(f, corb);
-    setCorBorda(f, corp);
+    setCorPreenchimento(f, corp);
     return (Figura)f;
 }
 
@@ -124,7 +125,7 @@ Figura criaRetanguloStruct(int id, double x, double y, double w, double h, char*
     f->w = w;
     f->h = h;
     setCorBorda(f, corb);
-    setCorBorda(f, corp);
+    setCorPreenchimento(f, corp);
     return (Figura)f;
 }
 
@@ -148,7 +149,7 @@ Figura criaTextoStruct(int id, double x, double y, char* corb, char* corp, char 
     f->y = y;
     f->ancora = ancora;
     setCorBorda(f, corb);
-    setCorBorda(f, corp);
+    setCorPreenchimento(f, corp);
     memset(f->texto, 0, sizeof(f->texto));
     strncpy(f->texto, texto, sizeof(f->texto) - 1);
     f->texto[sizeof(f->texto) - 1] = '\0';

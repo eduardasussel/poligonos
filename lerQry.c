@@ -27,7 +27,6 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
     char comando[10];
     double x, y, w, h, dx, dy;
     char corb[30], corp[30];
-    Poligono poligonoAtual = NULL;
 
     while (fscanf(arq, "%s", comando) != EOF) {
         printf("Executando comando: %s\n", comando);
@@ -61,7 +60,7 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
                 }
 
                 Ponto *pto = criaPonto(x_val, y_val);
-                enfileiraPontoNoPoligono(p, pto); 
+                enfileiraPontoNoPoligono(p, pto);
         
                 printf("Ponto (%f,%f) inserido no polígono %d\n", x_val, y_val, p_id);
 
@@ -71,7 +70,7 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
             fscanf(arq, "%d", &p_id); 
             Poligono p = buscaPoligono(listaPoligonos, p_id);
 
-            Ponto *removido = desenfileiraPontoDoPoligono(p); 
+            Ponto *removido = desenfileiraPontoDoPoligono(p);
         if (removido) {
             printf("Removido: %f, %f\n", getPontoX(removido), getPontoY(removido));
             liberaPonto(removido);
@@ -83,13 +82,24 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
             char corb[30], corp[30];
             fscanf(arq, "%d %d %lf %s %s", &p_id, &i_id, &d, corb, corp);
             realizaComandoPol(p_id, i_id, d, corb, corp, listaPoligonos, bancoDeDados);
-        } 
-        else if (strcmp(comando, "clp") == 0) {
-            int id_clp;
-            fscanf(arq, "%d", &id_clp);
-            poligonoAtual = buscaPoligono(listaPoligonos, id_clp);
-        } 
-        else if (strcmp(comando, "sel") == 0) {
+
+        } else if (strcmp(comando, "clp") == 0) {
+    int id_clp;
+    fscanf(arq, "%d", &id_clp);
+    Poligono p = buscaPoligono(listaPoligonos, id_clp);
+
+    if (p != NULL) {
+        while (tamanhoFila(getPontosPoligono(p)) > 0) {
+            Ponto pto = desenfileiraPontoDoPoligono(p); 
+            
+            if (pto != NULL) {
+                liberaPonto(pto); 
+            }
+        }
+        printf("Polígono %d esvaziado.\n", id_clp);
+    }
+    
+        } else if (strcmp(comando, "sel") == 0) {
             fscanf(arq, "%lf %lf %lf %lf", &x, &y, &w, &h);
             selecionaFigura(x, y, w, h, bancoDeDados);
             desenhaRetanguloSel(svg, x, y, w, h);

@@ -20,9 +20,11 @@ void liberaLista(Lista l);
 
 int contagemItens(Lista l);
 
-void destroiListaApenasNos(Lista l);
+void destroiListaApenasNos(Lista l); // usada
 
-void* buscaFiguraPorId(Lista l, int id);
+void* buscaFiguraPorId(Lista l, int id); // usada
+
+void verificaOrdenacao(Lista coordXLst);
 
 
 #endif

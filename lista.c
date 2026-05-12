@@ -66,6 +66,15 @@ void insereListaOrdenado(Lista l, void *item) {
     lista->tamanho++;
 }
 
+void verificaOrdenacao(Lista coordXLst) {
+    printf("DEBUG: Ordem dos X na linha: ");
+    for (Iterador it = primeiro(coordXLst); it != NULL; it = proximo(it)) {
+        double *valor = (double*) getItem(it);
+        printf("%.2f ", *valor);
+    }
+    printf("\n");
+}
+
 void transferirItens(Lista origem, Lista destino) {
     if (!origem || !destino) return;
     
@@ -152,13 +161,11 @@ void destroiListaApenasNos(Lista l) {
 }
 
 Figura buscaFiguraPorId(Lista l, int id) {
-    Iterador it = primeiro(l); 
-    while (it != NULL) {
+    for (Iterador it = primeiro(l); it != NULL; it = proximo(it)) {
         Figura f = getItem(it);
-        if (getFormaId(f) == id) {
+        if (getFormaId(f) == id) { 
             return f;
         }
-        it = proximo(it);
     }
     return NULL;
 }

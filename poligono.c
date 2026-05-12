@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "poligono.h"
 #include "fila.h"
 #include "comandos.h"
 #include "forma.h"
 #include "lista.h"
 #include "fila.h"
-
-typedef struct {
-    double x, y;
-} Ponto;
+#include "ponto.h"
 
 typedef struct {
     int id;
@@ -18,98 +16,111 @@ typedef struct {
 
 Poligono criaPoligono(int id) {
     EstruturaPoligono *p = (EstruturaPoligono*) malloc(sizeof(EstruturaPoligono));
+    if (p == NULL) return NULL;
+
     p->id = id;
-    p->pontos = criaFila();
+    p->pontos = criaFila(); 
+    
     return (Poligono)p;
 }
 
 void realizaComandoPol(int p_id, int inicial_id, double d, char* corb, char* corp, Lista poligonos, Lista geoLista) {
     Poligono p = buscaPoligono(poligonos, p_id);
-    
-    if (p == NULL) {
-        p = criaPoligono(p_id);
-        insereLista(poligonos, p);
+    if (p == NULL) return;
+
+    Fila filaPtos = getPontosPoligono(p);
+    int n = tamanhoFila(filaPtos);
+
+    if (n < 3) {
+        printf("Aviso: Polígono com pontos insuficientes.\n");
+        return;
     }
 
-    Lista poligLst = criaLista();
-    Lista preenhLst = criaLista();
-    
-    Fila filaPtos = getPontosPoligono(p); 
+    Lista bordasTemporarias = criaLista();
 
-    criaBordasPoligono(filaPtos, poligLst, corb, &inicial_id);
+    Ponto pPrimeiro = (Ponto) desenfileira(filaPtos);
+    enfileira(filaPtos, pPrimeiro);
+    Ponto anterior = pPrimeiro;
 
-    preenchePoligono(poligLst, preenhLst, d, corp, &inicial_id);
+    for (int i = 1; i < n; i++) {
+        Ponto atual = (Ponto) desenfileira(filaPtos);
+        
+        void* linha = criaLinhaStruct(inicial_id++, getPontoX(anterior), getPontoY(anterior), getPontoX(atual), getPontoY(atual), corb);
+        
+        insereLista(bordasTemporarias, linha); 
+        insereLista(geoLista, linha);    
+        
+        enfileira(filaPtos, atual);
+        anterior = atual;
+    }
 
-    transferirItens(poligLst, geoLista);
-    transferirItens(preenhLst, geoLista);
+    void* linhaFim = criaLinhaStruct(inicial_id++, getPontoX(anterior), getPontoY(anterior), getPontoX(pPrimeiro), getPontoY(pPrimeiro), corb);
+    insereLista(bordasTemporarias, linhaFim);
+    insereLista(geoLista, linhaFim);
 
-    destroiListaApenasNos(poligLst);
-    destroiListaApenasNos(preenhLst);
+    preenchePoligono(bordasTemporarias, geoLista, d, corp, &inicial_id);
+
+    destroiListaApenasNos(bordasTemporarias); 
+    free(bordasTemporarias);
 }
 
-void criaBordasPoligono(Fila filaPtos, Lista poligLst, char* corb, int* id_sequencial) {
-    if (filaVazia(filaPtos)) {
-        printf("DEBUG: Fila de pontos vazia. Ignorando pol.\n");
-        return;
-    }
+void criaBordasPoligono(Fila filaPtos, Lista geoLista, char* corb, int* id_sequencial) {
+    int n = tamanhoFila(filaPtos);
+    if (n < 2) return;
 
-    Lista listaPtos = exportarFilaParaLista(filaPtos);
-    int qtdPontos = contagemItens(listaPtos);
-
-    if (qtdPontos < 2) { 
-        printf("DEBUG: Pontos insuficientes (%d). Ignorando pol.\n", qtdPontos);
-        destroiListaApenasNos(listaPtos);
-        return;
-    }
-
-    Iterador it = primeiro(listaPtos);
-    Ponto *primeiroPonto = getItem(it);
-    Ponto *ptoAnterior = primeiroPonto;
+    Ponto pPrimeiro = (Ponto) desenfileira(filaPtos);
+    enfileira(filaPtos, pPrimeiro);
     
-    it = proximo(it);
-    while (it != NULL) {
-        Ponto *pontoCorrente = getItem(it);
+    Ponto pAnterior = pPrimeiro;
+
+    for (int i = 1; i < n; i++) {
+        Ponto pCorrente = (Ponto) desenfileira(filaPtos);
         
-        if (ptoAnterior && pontoCorrente) {
-            void* linha = criaLinhaStruct(*id_sequencial, ptoAnterior->x, ptoAnterior->y, pontoCorrente->x, pontoCorrente->y, corb);
-            if (linha) {
-                insereLista(poligLst, linha);
-                (*id_sequencial)++;
-            }
+        void* linha = criaLinhaStruct(*id_sequencial, getPontoX(pAnterior), getPontoY(pAnterior), getPontoX(pCorrente), getPontoY(pCorrente), corb);
+        
+        if (linha) {
+            insereLista(geoLista, linha);
+            (*id_sequencial)++;
         }
-        ptoAnterior = pontoCorrente;
-        it = proximo(it);
+        
+        enfileira(filaPtos, pCorrente);
+        pAnterior = pCorrente;
     }
 
-    // void* linhaFechamento = criaLinhaStruct(*id_sequencial, ptoAnterior->x, ptoAnterior->y, primeiroPonto->x, primeiroPonto->y, corb);
-    // insereLista(poligLst, linhaFechamento);
-    // (*id_sequencial)++;
-
-    destroiListaApenasNos(listaPtos);
+    void* linhaF = criaLinhaStruct(*id_sequencial, getPontoX(pAnterior), getPontoY(pAnterior), getPontoX(pPrimeiro), getPontoY(pPrimeiro), corb);
+    
+    if (linhaF) {
+        insereLista(geoLista, linhaF);
+        (*id_sequencial)++;
+    }
 }
 
 void preenchePoligono(Lista poligLst, Lista preenhLst, double d, char* corp, int* id_sequencial) {
     double xmin, ymin, xmax, ymax;
     determinaBoundingBox(poligLst, &xmin, &ymin, &xmax, &ymax);
 
-    if (d <= 0) return;
-
+   if (d <= 0) return;
     double ycorrente = ymin + (d/2.0);
-    while (ycorrente < ymax) {
-    ycorrente += d;
-}
-    
-    Lista coordXLst = criaLista();
 
     while (ycorrente < ymax) {
+        Lista coordXLst = criaLista();
         double sweepX1 = xmin - 1.0;
         double sweepX2 = xmax + 1.0;
 
-        for (Iterador it = primeiro(poligLst); it != NULL; it = proximo(it)) {
-            void* linhaBorda = getItem(it);
-            double interceptX;
-            
-            if (segmentosInterceptam(sweepX1, sweepX2, ycorrente, linhaBorda, &interceptX)) {
+    for (Iterador it = primeiro(poligLst); it != NULL; it = proximo(it)) {
+    void* linhaBorda = getItem(it);
+    
+    double y1 = getFormaY1(linhaBorda);
+    double y2 = getFormaY2(linhaBorda);
+
+    if (y1 == y2) continue;
+
+    double yMaxLinha = (y1 > y2) ? y1 : y2;
+    double yMinLinha = (y1 < y2) ? y1 : y2;
+
+    if (ycorrente >= yMinLinha && ycorrente < yMaxLinha) {
+        double interceptX;
+        if (segmentosInterceptam(sweepX1, sweepX2, ycorrente, linhaBorda, &interceptX)) {
                 double *interceptX_ptr = (double*) malloc(sizeof(double));
                 if (interceptX_ptr != NULL) {
                     *interceptX_ptr = interceptX;
@@ -117,45 +128,57 @@ void preenchePoligono(Lista poligLst, Lista preenhLst, double d, char* corp, int
                 }
             }
         }
-
-        geraLinhasPreenchimento(ycorrente, coordXLst, preenhLst, corp, id_sequencial);
-        
-        limpaListaEItens(coordXLst); 
-        
-        ycorrente += d;
+        printf("DEBUG: Linha detectada entre Y1: %lf e Y2: %lf\n", y1, y2);
     }
+            
+        geraLinhasPreenchimento(ycorrente, coordXLst, preenhLst, corp, id_sequencial);
+    
+        for (Iterador it = primeiro(coordXLst); it != NULL; it = proximo(it)) {
+            double *ptr = (double*) getItem(it);
+            free(ptr);
+        }
+        liberaLista(coordXLst);
 
-    liberaLista(coordXLst);
+        ycorrente += d;
+        
+    }
 }
 
 void geraLinhasPreenchimento(double y, Lista coordXLst, Lista preenhLst, char* corp, int* id_sequencial) {
     Iterador it = primeiro(coordXLst);
+    
     while (it != NULL) {
-        double *xini = getItem(it);
+        double *x1_ptr = (double*) getItem(it);
         it = proximo(it);
-        if (it == NULL) break;
-        double *xfim = getItem(it);
         
-        void* linhaPreench = criaLinhaStruct(*id_sequencial, *xini, y, *xfim, y, corp);
-        insereLista(preenhLst, linhaPreench);
+        if (it == NULL) break; 
         
-        (*id_sequencial)++;
+        double *x2_ptr = (double*) getItem(it);
+        
+        if (x1_ptr && x2_ptr) {
+            double diff = *x2_ptr - *x1_ptr;
+            if (diff > 0.00001) { 
+                void* linhaPreench = criaLinhaStruct(*id_sequencial, *x1_ptr, y, *x2_ptr, y, corp);
+                if (linhaPreench) {
+                    insereLista(preenhLst, linhaPreench);
+                    (*id_sequencial)++;
+                }
+            }
+        }
+        
         it = proximo(it);
     }
 }
 
-void inserePontoNoPoligono(Poligono p, double x, double y) {
-    EstruturaPoligono *pol = (EstruturaPoligono*) p;
-    Ponto *novoPonto = malloc(sizeof(Ponto));
-    novoPonto->x = x;
-    novoPonto->y = y;
-    enfileira(pol->pontos, novoPonto);
-}
-
 void removePontoMaisAntigo(Poligono p) {
+    if (p == NULL) return;
     EstruturaPoligono *pol = (EstruturaPoligono*) p;
-    Ponto *antigo = (Ponto*) desenfileira(pol->pontos);
-    if (antigo) free(antigo);
+
+    Ponto antigo = (Ponto) desenfileira(pol->pontos);
+    
+    if (antigo != NULL) {
+        liberaPonto(antigo); 
+    }
 }
 
 Poligono buscaPoligono(Lista listaPoligonos, int id) {
@@ -180,54 +203,71 @@ int getIdPoligono(Poligono p) {
 int segmentosInterceptam(double x1, double x2, double y, void* linhaBorda, double *interceptX) {
     double ly1 = getFormaY1(linhaBorda);
     double ly2 = getFormaY2(linhaBorda);
-    double lx1 = getFormaX1(linhaBorda);
-    double lx2 = getFormaX2(linhaBorda);
+
+    if (fabs(ly1 - ly2) < 0.000001) return 0;
 
     double y_min = (ly1 < ly2) ? ly1 : ly2;
     double y_max = (ly1 > ly2) ? ly1 : ly2;
 
     if (y >= y_min && y < y_max) {
-    if (ly2 != ly1) { 
-        *interceptX = lx1 + (y - ly1) * (lx2 - lx1) / (ly2 - ly1);
-        return 1;
+        double lx1 = getFormaX1(linhaBorda);
+        double lx2 = getFormaX2(linhaBorda);
+        
+        double ix = lx1 + (y - ly1) * (lx2 - lx1) / (ly2 - ly1);
+    
+        double x_min_sweep = (x1 < x2) ? x1 : x2;
+        double x_max_sweep = (x1 > x2) ? x1 : x2;
+
+        if (ix >= x_min_sweep && ix <= x_max_sweep) {
+            *interceptX = ix;
+            return 1;
+        }
     }
-}
     return 0;
 }
 
-void determinaBoundingBox(Lista poligLst, double *xmin, double *ymin, double *xmax, double *ymax) {
-    Iterador it = primeiro(poligLst);
-    if (it == NULL) return;
+void determinaBoundingBox(Fila filaPtos, double *xmin, double *ymin, double *xmax, double *ymax) {
+    int n = tamanhoFila(filaPtos);
+    if (n <= 0) return;
 
-    void* primeira = getItem(it);
-    
-    *xmin = getFormaX1(primeira);
-    *xmax = getFormaX1(primeira);
-    *ymin = getFormaY1(primeira);
-    *ymax = getFormaY1(primeira);
+    int inicializado = 0; 
 
-    for (it = proximo(it); it != NULL; it = proximo(it)) {
-        void* l = getItem(it);
-        double lx1 = getFormaX1(l);
-        double ly1 = getFormaY1(l);
-        double lx2 = getFormaX2(l);
-        double ly2 = getFormaY2(l);
+    for (int i = 0; i < n; i++) {
+        Ponto p = (Ponto) desenfileira(filaPtos);
+        
+        if (p != NULL) {
+            double x = getPontoX(p);
+            double y = getPontoY(p);
 
-        if (lx1 < *xmin) { *xmin = lx1; }
-        if (lx2 < *xmin) { *xmin = lx2; }
-
-        if (lx1 > *xmax) { *xmax = lx1; }   
-        if (lx2 > *xmax) { *xmax = lx2; }
-
-        if (ly1 < *ymin) { *ymin = ly1; }
-        if (ly2 < *ymin) { *ymin = ly2; }
-
-        if (ly1 > *ymax) { *ymax = ly1; }
-        if (ly2 > *ymax) { *ymax = ly2; }
+            if (!inicializado) {
+                *xmin = *xmax = x;
+                *ymin = *ymax = y;
+                inicializado = 1;
+            } else {
+                if (x < *xmin) *xmin = x;
+                if (x > *xmax) *xmax = x;
+                if (y < *ymin) *ymin = y;
+                if (y > *ymax) *ymax = y;
+            }
+        }
+        
+        enfileira(filaPtos, p); 
     }
 }
 
 Fila getPontosPoligono(Poligono p) {
     if (p == NULL) return NULL;
     return ((EstruturaPoligono*)p)->pontos;
+}
+
+void enfileiraPontoNoPoligono(Poligono p, Ponto pto) {
+    if (p == NULL || pto == NULL) return;
+    EstruturaPoligono *pol = (EstruturaPoligono*) p;
+    enfileira(pol->pontos, pto);
+}
+
+Ponto desenfileiraPontoDoPoligono(Poligono p) {
+    if (p == NULL) return NULL;
+    EstruturaPoligono *pol = (EstruturaPoligono*) p;
+    return (Ponto) desenfileira(pol->pontos);
 }

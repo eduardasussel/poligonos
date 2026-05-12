@@ -2,43 +2,52 @@
 #include "fila.h"
 #include "lista.h"
 
-#define MAX_FILA 20
+#define MAX_FILA 1000
 
 typedef struct {
     void* itens[MAX_FILA];
     int frente;
     int final;
-    int tamanho;
+    int nItens;
 } EstruturaFila;
 
 Fila criaFila() {
     EstruturaFila *f = (EstruturaFila*) malloc(sizeof(EstruturaFila));
     f->frente = 0;
     f->final = -1;
-    f->tamanho = 0;
+    f->nItens = 0;
     return (Fila)f;
 }
 
 void enfileira(Fila f, void *item) {
     EstruturaFila *fila = (EstruturaFila*) f;
-    if (fila->tamanho == MAX_FILA) return;
+    if (fila->nItens == MAX_FILA) return;
 
     fila->final = (fila->final + 1) % MAX_FILA;
     fila->itens[fila->final] = item;
-    fila->tamanho++;
+    fila->nItens++;
 }
 
-void *desenfileira(Fila f) {
+void* desenfileira(Fila f) {
     EstruturaFila *fila = (EstruturaFila*) f;
-    if (fila->tamanho == 0) return NULL;
+    
+    if (fila == NULL || fila->nItens == 0) {
+        return NULL; 
+    }
 
     void *item = fila->itens[fila->frente];
     fila->frente = (fila->frente + 1) % MAX_FILA;
-    fila->tamanho--;
+    fila->nItens--;
+    
     return item;
 }
 
 int filaVazia(Fila f) {
     EstruturaFila *fila = (EstruturaFila*) f;
-    return (fila->frente == NULL);
+
+    return (fila->nItens == 0); 
+}
+
+int tamanhoFila(Fila f) {
+    return ((EstruturaFila*)f)->nItens;
 }
