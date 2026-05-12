@@ -7,6 +7,8 @@
 #include "forma.h"
 #include "lista.h"
 #include "svg.h"
+#include "fila.h"
+#include "ponto.h"
 
 void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados, Lista listaPoligonos) {
     char caminhoCompleto[512];
@@ -31,47 +33,51 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
         printf("Executando comando: %s\n", comando);
 
         if (strcmp(comando, "inp") == 0) {
-    int p_id, i_id;
-    fscanf(arq, "%d %d", &p_id, &i_id);
-    
-    Poligono p = buscaPoligono(listaPoligonos, p_id);
-    Figura f = buscaFiguraPorId(bancoDeDados, i_id);
+            int p_id, i_id;
+            fscanf(arq, "%d %d", &p_id, &i_id);
+            
+            Poligono p = buscaPoligono(listaPoligonos, p_id);
+            Figura f = buscaFiguraPorId(bancoDeDados, i_id);
 
-    if (p == NULL) {
-        p = criaPoligono(p_id);
-        insereLista(listaPoligonos, p);
-    }
-
-    if (p != NULL && f != NULL) {
-        double x_val, y_val; 
-
-        if (getFormaTipo(f) == 'l') {
-            double x1 = getFormaX1(f);
-            double y1 = getFormaY1(f);
-            double x2 = getFormaX2(f);
-            double y2 = getFormaY2(f);
-
-            if (x1 < x2 || (x1 == x2 && y1 < y2)) {
-                x_val = x1; y_val = y1;
-            } else {
-                x_val = x2; y_val = y2;
+            if (p == NULL) {
+                p = criaPoligono(p_id);
+                insereLista(listaPoligonos, p);
             }
-        } else {
-            getAncoraFigura(f, &x_val, &y_val);
-        }
+
+            if (f != NULL) {
+                double x_val, y_val; 
+                if (getFormaTipo(f) == 'l') {
+                    double x1 = getFormaX1(f);
+                    double y1 = getFormaY1(f);
+                    double x2 = getFormaX2(f);
+                    double y2 = getFormaY2(f);
+                    if (x1 < x2 || (x1 == x2 && y1 < y2)) {
+                        x_val = x1; y_val = y1;
+                    } else {
+                        x_val = x2; y_val = y2;
+                    }
+                } else {
+                    getAncoraFigura(f, &x_val, &y_val);
+                }
+
+                Ponto *pto = criaPonto(x_val, y_val);
+                enfileiraPontoNoPoligono(p, pto); 
         
-        inserePontoNoPoligono(p, x_val, y_val);
-    }
-}
-        else if (strcmp(comando, "rmp") == 0) {
+                printf("Ponto (%f,%f) inserido no polígono %d\n", x_val, y_val, p_id);
+
+
+        } else if (strcmp(comando, "rmp") == 0) {
             int p_id;
             fscanf(arq, "%d", &p_id); 
             Poligono p = buscaPoligono(listaPoligonos, p_id);
-            if (p != NULL) {
-                removePontoMaisAntigo(p);
-            }
-        } 
-        else if (strcmp(comando, "pol") == 0) {
+
+            Ponto *removido = desenfileiraPontoDoPoligono(p); 
+        if (removido) {
+            printf("Removido: %f, %f\n", getPontoX(removido), getPontoY(removido));
+            liberaPonto(removido);
+        }
+    }
+        } else if (strcmp(comando, "pol") == 0) {
             int p_id, i_id;
             double d;
             char corb[30], corp[30];
@@ -95,7 +101,7 @@ void lerArquivoQry(char *bed, char *nomeArq, char *pathSaida, Lista bancoDeDados
             fscanf(arq, "%lf %lf %s %s", &dx, &dy, corb, corp);
             modificaFiguras(dx, dy, corb, corp, bancoDeDados);
         }
-    }
+    } 
 
     Iterador it = primeiro(bancoDeDados);
     while (it != NULL) {

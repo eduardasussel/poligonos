@@ -2,65 +2,43 @@
 #include "fila.h"
 #include "lista.h"
 
-typedef struct No {
-    void *item;
-    struct No *prox;
-} No;
+#define MAX_FILA 20
 
 typedef struct {
-    No *frente;
-    No *final;
+    void* itens[MAX_FILA];
+    int frente;
+    int final;
+    int tamanho;
 } EstruturaFila;
 
 Fila criaFila() {
     EstruturaFila *f = (EstruturaFila*) malloc(sizeof(EstruturaFila));
-    f->frente = f->final = NULL;
+    f->frente = 0;
+    f->final = -1;
+    f->tamanho = 0;
     return (Fila)f;
 }
 
 void enfileira(Fila f, void *item) {
     EstruturaFila *fila = (EstruturaFila*) f;
-    No *novo = (No*) malloc(sizeof(No));
-    novo->item = item;
-    novo->prox = NULL;
-    if (fila->final == NULL) {
-        fila->frente = fila->final = novo;
-        return;
-    }
-    fila->final->prox = novo;
-    fila->final = novo;
+    if (fila->tamanho == MAX_FILA) return;
+
+    fila->final = (fila->final + 1) % MAX_FILA;
+    fila->itens[fila->final] = item;
+    fila->tamanho++;
 }
 
 void *desenfileira(Fila f) {
     EstruturaFila *fila = (EstruturaFila*) f;
-    if (fila->frente == NULL) return NULL;
-    No *temp = fila->frente;
-    void *item = temp->item;
-    fila->frente = fila->frente->prox;
-    if (fila->frente == NULL) fila->final = NULL;
-    free(temp);
+    if (fila->tamanho == 0) return NULL;
+
+    void *item = fila->itens[fila->frente];
+    fila->frente = (fila->frente + 1) % MAX_FILA;
+    fila->tamanho--;
     return item;
 }
 
 int filaVazia(Fila f) {
     EstruturaFila *fila = (EstruturaFila*) f;
     return (fila->frente == NULL);
-}
-
-void liberaFila(Fila f) {
-    while (!filaVazia(f)) {
-        desenfileira(f);
-    }
-    free(f);
-}
-
-Lista exportarFilaParaLista(Fila f) {
-    EstruturaFila *fila = (EstruturaFila*) f;
-    Lista l = criaLista();
-    No *atual = fila->frente;
-    while (atual != NULL) {
-        insereLista(l, atual->item);
-        atual = atual->prox;
-    }
-    return l;
 }
